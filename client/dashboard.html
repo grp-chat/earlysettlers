@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kingdom Dashboard | Early Settlers</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <style>
+        /* TAB NAVIGATION */
+        .tab-nav { display: flex; justify-content: center; background: rgba(0, 0, 0, 0.9); padding: 5px; gap: 8px; border-bottom: 1px solid var(--gold); }
+        .tab-btn { background: #111; color: #666; border: 1px solid #222; padding: 4px 15px; cursor: pointer; border-radius: 3px; font-size: 0.7rem; font-weight: bold; transition: 0.2s; }
+        .tab-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(241, 196, 15, 0.05); }
+
+        /* VIEW TOGGLING */
+        .dashboard-view { display: none; }
+        .dashboard-view.active { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 8px; height: calc(100vh - 100px); }
+
+        /* TEAM PANEL STYLES */
+        .team-panel { display: flex; flex-direction: column; background: rgba(8, 8, 20, 0.95); border: 1px solid rgba(255,255,255,0.05); cursor: pointer; position: relative; overflow: hidden; }
+        .team-panel:hover { border-color: var(--gold); }
+        .team-panel::after { content: 'OPEN ARCHITECT'; position: absolute; bottom: 3px; right: 8px; font-size: 0.5rem; color: var(--gold); opacity: 0.4; font-weight: bold; }
+
+        .panel-header { display: flex; align-items: center; gap: 6px; padding: 2px 8px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; }
+
+        .team-stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); background: rgba(0, 0, 0, 0.6); padding: 5px 2px; border-bottom: 1px solid rgba(255,255,255,0.03); text-align: center; }
+        .stat-box { display: flex; flex-direction: column; }
+        .stat-label { font-size: 1rem; color: #555; text-transform: uppercase; }
+        .stat-val { font-size: 1rem; font-weight: bold; font-family: monospace; }
+        
+        .asset-list { flex-grow: 1; display: grid; grid-template-columns: 1fr 1fr; align-content: start; gap: 5px; padding: 8px; overflow-y: auto; }
+        .empty-msg { grid-column: span 2; text-align: center; color: #222; margin-top: 15px; font-size: 0.6rem; letter-spacing: 1px; }
+
+        /* --- FULL SCREEN ARCHITECT --- */
+        .drawer-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(3, 3, 8, 0.98); backdrop-filter: blur(8px);
+            z-index: 10000; display: none; flex-direction: column;
+        }
+        .drawer-overlay.open { display: flex; }
+
+        .drawer-header { 
+            padding: 8px 15px; 
+            border-bottom: 1px solid #333; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: #000; 
+            gap: 20px;
+        }
+        
+        .drawer-resources-inline { 
+            display: flex; 
+            gap: 25px; 
+            font-size: 0.7rem; 
+            flex-grow: 1; 
+            justify-content: center; 
+        }
+
+        .team-group-view { display: none; gap: 40px; align-items: center; }
+        .team-group-view.active { display: flex; }
+        
+        .team-mini-block { display: flex; align-items: center; gap: 6px; }
+        .team-label-mini { font-size: 0.55rem; font-weight: bold; text-transform: uppercase; }
+        
+        .res-pill { background: #000; padding: 2px 5px; border-radius: 4px; border: 1px solid #222; color: #aaa; white-space: nowrap; font-size: 0.8rem; }
+        .res-pill span { font-size: 0.65rem; margin-left: 2px; }
+        
+        /* UPDATED TO 6 COLUMNS */
+        .build-grid { 
+            padding: 10px; 
+            display: grid; 
+            grid-template-columns: repeat(6, 1fr); 
+            gap: 8px; 
+            overflow-y: auto; 
+            flex-grow: 1; 
+            align-content: start;
+        }
+        
+        .drawer-card { 
+            background: #0a0f1d; border: 1px solid #1a1a1a; 
+            padding: 6px; display: flex; flex-direction: column; 
+            transition: 0.1s; border-radius: 3px;
+            height: fit-content;
+        }
+        .drawer-card:hover { border-color: var(--gold); background: #111827; }
+
+        .card-img-placeholder {
+            width: 100%; height: 60px; background: #000; border-radius: 1px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid #151515; font-size: 0.45rem; color: #222;
+            background-size: cover; background-position: center;
+        }
+
+        .card-details h4 { margin: 4px 0 2px 0; font-size: 0.9rem; color: var(--gold); letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-details p { font-size: 0.5rem; color: white; margin: 0 0 4px 0; line-height: 1; text-transform: uppercase; }
+        
+        .mini-costs { display: flex; flex-wrap: wrap; gap: 4px; font-size: 0.85rem; color: #bbb; border-top: 1px solid #1a1a1a; padding-top: 4px; }
+        .mini-costs span { font-size: 0.65rem; }
+        
+        /* TEAM STATUS ROW */
+        .team-availability-row { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-top: 6px; 
+            padding-top: 4px; 
+            border-top: 1px dashed #222;
+        }
+        .team-status-indicator { font-size: 0.55rem; font-weight: bold; display: flex; align-items: center; gap: 3px; }
+        .status-icon { font-size: 0.65rem; }
+
+        .close-drawer { background: #111; color: #888; border: 1px solid #333; padding: 4px 10px; cursor: pointer; font-size: 0.65rem; flex-shrink: 0; }
+    </style>
+</head>
+<body class="dashboard-body">
+    <div class="game-container">
+        <header class="resource-bar" style="height: 28px; padding: 0 15px; border-bottom: 1px solid #222;">
+            <div class="resource-item" style="font-size: 0.65rem;">🏰 LEADERBOARD</div>
+            <div class="resource-item" id="lockStatus" style="font-size: 0.65rem; font-weight: bold;"></div>
+            <div class="resource-item" style="font-size: 0.65rem; color: #27ae60;">● LIVE</div>
+            <div class="resource-item" style="font-size: 0.75rem; margin-left: auto;"></div>
+        </header>
+
+        <nav class="tab-nav">
+            <button class="tab-btn active" id="btn-main" onclick="switchTab('main')">MAIN (RED/BLUE/GREEN)</button>
+            <button class="tab-btn" id="btn-reserve" onclick="switchTab('reserve')">RESERVES</button>
+        </nav>
+
+        <main id="view-main" class="dashboard-view active">
+            <section class="team-panel" id="panel-red" onclick="openDrawer('red')">
+                <div class="panel-header" style="background: #8e1a1a; color: white;"><span>🔴</span> RED</div>
+                <div class="team-stats-bar">
+                    <div class="stat-box"><span class="stat-label">🪵</span><span class="stat-val" id="wood-red">0</span></div>
+                    <div class="stat-box"><span class="stat-label">🏺</span><span class="stat-val" id="clay-red">0</span></div>
+                    <div class="stat-box"><span class="stat-label">🪨</span><span class="stat-val" id="stone-red">0</span></div>
+                    <div class="stat-box"><span class="stat-label">🏆</span><span class="stat-val" id="points-red" style="color:var(--gold)">0</span></div>
+                </div>
+                <div class="asset-list" id="assets-red"></div>
+            </section>
+            
+            <section class="team-panel" id="panel-blue" onclick="openDrawer('blue')">
+                <div class="panel-header" style="background: #1a4a8e; color: white;"><span>🔵</span> BLUE</div>
+                <div class="team-stats-bar">
+                    <div class="stat-box"><span class="stat-label">🪵</span><span class="stat-val" id="wood-blue">0</span></div>
+                    <div class="stat-box"><span class="stat-label">🏺</span><span class="stat-val" id="clay-blue">0</span></div>
+                    <div class="stat-box"><span class="stat-label">🪨</span><span class="stat-val" id="stone-blue">0</span></div>
+                    <div class="stat-box"><span class="stat-label">🏆</span><span class="stat-val" id="points-blue" style="color:var(--gold)">0</span></div>
+                </div>
+                <div class="asset-list" id="assets-blue"></div>
+            </section>
+
+            <section class="team-panel" id="panel-green" onclick="openDrawer('green')">
+                <div class="panel-header" style="background: #1a8e4a; color: white;"><span>🟢</span> GREEN</div>
+                <div class="team-stats-bar">
+                    <div class="stat-box"><span class="stat-label">🪵</span><span class="stat-val" id="wood-green">0</span></div>
+                    <div class="stat-box"><span class="stat-label">🏺</span><span class="stat-val" id="clay-green">0</span></div>
+                    <div class="stat-box"><span class="stat-label">🪨</span><span class="stat-val" id="stone-green">0</span></div>
+                    <div class="stat-box"><span class="stat-label">🏆</span><span class="stat-val" id="points-green" style="color:var(--gold)">0</span></div>
+                </div>
+                <div class="asset-list" id="assets-green"></div>
+            </section>
+        </main>
+
+        <main id="view-reserve" class="dashboard-view">
+            <section class="team-panel" id="panel-purple" onclick="openDrawer('purple')">
+                <div class="panel-header" style="background: #6a1a8e; color: white;"><span>🟣</span> PURPLE</div>
+                <div class="team-stats-bar">
+                    <div class="stat-box"><span class="stat-label">W</span><span class="stat-val" id="wood-purple">0</span></div>
+                    <div class="stat-box"><span class="stat-label">C</span><span class="stat-val" id="clay-purple">0</span></div>
+                    <div class="stat-box"><span class="stat-label">S</span><span class="stat-val" id="stone-purple">0</span></div>
+                    <div class="stat-box"><span class="stat-label">🏆</span><span class="stat-val" id="points-purple" style="color:var(--gold)">0</span></div>
+                </div>
+                <div class="asset-list" id="assets-purple"></div>
+            </section>
+
+            <section class="team-panel" id="panel-yellow" onclick="openDrawer('yellow')">
+                <div class="panel-header" style="background: #8e8e1a; color: white;"><span>🟡</span> YELLOW</div>
+                <div class="team-stats-bar">
+                    <div class="stat-box"><span class="stat-label">W</span><span class="stat-val" id="wood-yellow">0</span></div>
+                    <div class="stat-box"><span class="stat-label">C</span><span class="stat-val" id="clay-yellow">0</span></div>
+                    <div class="stat-box"><span class="stat-label">S</span><span class="stat-val" id="stone-yellow">0</span></div>
+                    <div class="stat-box"><span class="stat-label">🏆</span><span class="stat-val" id="points-yellow" style="color:var(--gold)">0</span></div>
+                </div>
+                <div class="asset-list" id="assets-yellow"></div>
+            </section>
+
+            <section class="team-panel" id="panel-none" onclick="openDrawer('none')">
+                <div class="panel-header" style="background: #333; color: white;"><span>⚪</span> UNASSIGNED</div>
+                <div class="team-stats-bar">
+                    <div class="stat-box"><span class="stat-label">W</span><span class="stat-val" id="wood-none">0</span></div>
+                    <div class="stat-box"><span class="stat-label">C</span><span class="stat-val" id="clay-none">0</span></div>
+                    <div class="stat-box"><span class="stat-label">S</span><span class="stat-val" id="stone-none">0</span></div>
+                    <div class="stat-box"><span class="stat-label">🏆</span><span class="stat-val" id="points-none" style="color:var(--gold)">0</span></div>
+                </div>
+                <div class="asset-list" id="assets-none"></div>
+            </section>
+        </main>
+
+        <footer class="admin-footer" style="height: 35px;">
+            <button class="menu-btn" style="font-size: 0.7rem;" onclick="window.location.href='/settings.html'">⚙️</button>
+            <button class="menu-btn" style="font-size: 0.65rem;" onclick="window.location.href='/'">EXIT</button>
+        </footer>
+    </div>
+
+    <div id="architect-drawer" class="drawer-overlay">
+        <div class="drawer-header">
+            <h2 id="drawer-title" style="margin:0; font-size:0.8rem; letter-spacing:1px; text-transform: uppercase; white-space: nowrap; color: #fff;">ARCHITECT</h2>
+            
+            <div class="drawer-resources-inline">
+                <div class="team-group-view" id="res-group-main">
+                    <div class="team-mini-block">
+                        <span class="team-label-mini" style="color:#e74c3c">RED:</span>
+                        <span class="res-pill">🪵<span id="dw-wood-red">0</span></span>
+                        <span class="res-pill">🧱<span id="dw-clay-red">0</span></span>
+                        <span class="res-pill">🪨<span id="dw-stone-red">0</span></span>
+                        <span class="res-pill">🏆<span id="dw-points-red">0</span></span>
+                    </div>
+                    <div class="team-mini-block">
+                        <span class="team-label-mini" style="color:#3498db">BLUE:</span>
+                        <span class="res-pill">🪵<span id="dw-wood-blue">0</span></span>
+                        <span class="res-pill">🧱<span id="dw-clay-blue">0</span></span>
+                        <span class="res-pill">🪨<span id="dw-stone-blue">0</span></span>
+                        <span class="res-pill">🏆<span id="dw-points-blue">0</span></span>
+                    </div>
+                    <div class="team-mini-block">
+                        <span class="team-label-mini" style="color:#2ecc71">GREEN:</span>
+                        <span class="res-pill">🪵<span id="dw-wood-green">0</span></span>
+                        <span class="res-pill">🧱<span id="dw-clay-green">0</span></span>
+                        <span class="res-pill">🪨<span id="dw-stone-green">0</span></span>
+                        <span class="res-pill">🏆<span id="dw-points-green">0</span></span>
+                    </div>
+                </div>
+
+                <div class="team-group-view" id="res-group-reserve">
+                    <div class="team-mini-block">
+                        <span class="team-label-mini" style="color:#9b59b6">PURPLE:</span>
+                        <span class="res-pill">🪵<span id="dw-wood-purple">0</span></span>
+                        <span class="res-pill">🧱<span id="dw-clay-purple">0</span></span>
+                        <span class="res-pill">🪨<span id="dw-stone-purple">0</span></span>
+                        <span class="res-pill">🏆<span id="dw-points-purple">0</span></span>
+                    </div>
+                    <div class="team-mini-block">
+                        <span class="team-label-mini" style="color:#f1c40f">YELLOW:</span>
+                        <span class="res-pill">🪵<span id="dw-wood-yellow">0</span></span>
+                        <span class="res-pill">🧱<span id="dw-clay-yellow">0</span></span>
+                        <span class="res-pill">🪨<span id="dw-stone-yellow">0</span></span>
+                        <span class="res-pill">🏆<span id="dw-points-yellow">0</span></span>
+                    </div>
+                    <div class="team-mini-block">
+                        <span class="team-label-mini" style="color:#777">UNASSIGNED:</span>
+                        <span class="res-pill">🪵<span id="dw-wood-none">0</span></span>
+                        <span class="res-pill">🧱<span id="dw-clay-none">0</span></span>
+                        <span class="res-pill">🪨<span id="dw-stone-none">0</span></span>
+                        <span class="res-pill">🏆<span id="dw-points-none">0</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="close-drawer" onclick="closeDrawer()">✕</button>
+        </div>
+        <div class="build-grid" id="drawer-grid"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/structures.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

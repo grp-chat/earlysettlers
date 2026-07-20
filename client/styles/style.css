@@ -1,0 +1,246 @@
+/* --- CORE VARIABLES --- */
+:root {
+    --bg-color: #0a0a1a;
+    --panel-bg: #16213e;
+    --accent-color: #00f3ff; /* Electric Cyan */
+    --gold: #f1c40f;
+    --text-main: #e2e2e2;
+    --card-bg: #0f3460;
+
+    /* Team Colors */
+    --team-red: #e74c3c;
+    --team-blue: #3498db;
+    --team-green: #2ecc71;
+    --team-purple: #9b59b6;
+    --team-yellow: #f1c40f;
+    --team-none: #555555;
+}
+
+/* --- BASE STYLES --- */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    overflow-x: hidden;
+}
+
+/* --- MAIN MENU STYLING --- */
+.main-menu-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: radial-gradient(circle, #16213e 0%, #0a0a1a 100%);
+}
+
+#menu-container {
+    text-align: center;
+    padding: 3rem;
+    background: var(--panel-bg);
+    border: 3px solid var(--gold);
+    border-radius: 15px;
+    box-shadow: 0 0 30px rgba(241, 196, 15, 0.2);
+    max-width: 500px;
+    width: 90%;
+}
+
+.game-title {
+    font-size: 3.5rem;
+    color: var(--gold);
+    margin: 0;
+    line-height: 0.9;
+    text-shadow: 2px 2px 0px #000, 0 0 15px rgba(241, 196, 15, 0.4);
+    font-family: 'Georgia', serif;
+}
+
+.branding-top {
+    font-size: 0.85rem;
+    color: #888;
+    letter-spacing: 5px;
+    margin: 15px 0 5px 0;
+    text-transform: uppercase;
+    font-weight: 300;
+}
+
+.tagline {
+    color: var(--accent-color);
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    margin: 0;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* --- DASHBOARD & SETTINGS COMMON LAYOUT --- */
+.game-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Header Bar */
+.resource-bar {
+    background: #000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    border-bottom: 2px solid var(--gold);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.resource-item { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    font-weight: bold; 
+    letter-spacing: 1px;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+.team-panel {
+    background: rgba(22, 33, 62, 0.7);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+    transition: transform 0.3s ease;
+}
+
+.panel-header {
+    padding: 15px;
+    background: rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-weight: bold;
+    text-align: center;
+    letter-spacing: 2px;
+}
+
+/* Team Panel Glows */
+#panel-red { border-top: 5px solid var(--team-red); }
+#panel-blue { border-top: 5px solid var(--team-blue); }
+#panel-green { border-top: 5px solid var(--team-green); }
+#panel-purple { border-top: 5px solid var(--team-purple); }
+#panel-yellow { border-top: 5px solid var(--team-yellow); }
+#panel-none { border-top: 5px solid var(--team-none); border-style: dashed; }
+
+.player-list {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Player Cards */
+.player-card {
+    background: var(--card-bg);
+    padding: 12px 20px;
+    border-radius: 5px;
+    border-left: 3px solid var(--accent-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.player-card.absent {
+    opacity: 0.4;
+    filter: grayscale(0.8);
+}
+
+.squad-tag {
+    font-size: 0.7rem;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgba(241, 196, 15, 0.1);
+    font-weight: bold;
+}
+
+/* --- BUTTONS & INPUTS --- */
+.menu-btn {
+    background: var(--card-bg);
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 4px;
+}
+
+.menu-btn:hover {
+    background: var(--gold);
+    color: #000;
+    box-shadow: 0 0 15px var(--gold);
+}
+
+.menu-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Team Toggle Buttons (Settings Page) */
+.team-btn {
+    width: 32px;
+    height: 32px;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    font-size: 0.8rem;
+    transition: 0.2s;
+}
+
+.team-btn.active {
+    border-color: white;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    transform: scale(1.1);
+}
+
+/* --- SETTINGS TABLE --- */
+.settings-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: var(--panel-bg);
+}
+
+.settings-table th {
+    text-align: left;
+    padding: 15px;
+    background: #000;
+    color: var(--gold);
+    border-bottom: 2px solid var(--gold);
+}
+
+/* Footer Section */
+.admin-footer {
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    background: rgba(0,0,0,0.5);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-color); }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }

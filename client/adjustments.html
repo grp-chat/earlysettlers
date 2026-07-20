@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kingdom Adjustments</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: white; padding: 20px; }
+        .team-card { 
+            background: #2a2a2a; border-radius: 8px; padding: 15px; 
+            margin-bottom: 15px; border-left: 5px solid #4CAF50; 
+        }
+        h2 { margin-top: 0; color: #4CAF50; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px; }
+        .input-group { display: flex; flex-direction: column; }
+        label { font-size: 12px; color: #aaa; margin-bottom: 4px; }
+        input { 
+            padding: 8px; border-radius: 4px; border: 1px solid #444; 
+            background: #000; color: #fff; font-size: 16px; 
+        }
+        button { 
+            margin-top: 15px; padding: 10px; width: 100%; 
+            background: #4CAF50; color: white; border: none; 
+            border-radius: 4px; cursor: pointer; font-weight: bold;
+        }
+        button:hover { background: #45a049; }
+        #status-msg { position: fixed; top: 10px; right: 10px; padding: 10px; border-radius: 4px; display: none; }
+    </style>
+</head>
+<body>
+
+    <h1>🛠️ Team Adjustments</h1>
+    <div id="team-list">Loading teams...</div>
+    <div id="status-msg"></div>
+
+    <script>
+        const socket = io();
+        let currentTeams = {};
+
+        // 1. Request data on load
+        socket.emit('getSettingsData');
+
+        // 2. Receive data and build the UI
+        socket.on('settingsUpdate', (data) => {
+            const container = document.getElementById('team-list');
+            container.innerHTML = '';
+            currentTeams = data.teamStats;
+
+            Object.keys(currentTeams).forEach(teamId => {
+                const stats = currentTeams[teamId];
+                const card = document.createElement('div');
+                card.className = 'team-card';
+                card.innerHTML = `
+                    <h2>Team: ${teamId}</h2>
+                    <div class="grid">
+                        <div class="input-group">
+                            <label>Wood</label>
+                            <input type="number" id="wood-${teamId}" value="${stats.wood}">
+                        </div>
+                        <div class="input-group">
+                            <label>Clay</label>
+                            <input type="number" id="clay-${teamId}" value="${stats.clay}">
+                        </div>
+                        <div class="input-group">
+                            <label>Stone</label>
+                            <input type="number" id="stone-${teamId}" value="${stats.stone}">
+                        </div>
+                        <div class="input-group">
+                            <label>Points</label>
+                            <input type="number" id="points-${teamId}" value="${stats.points}">
+                        </div>
+                    </div>
+                    <button onclick="saveChanges('${teamId}')">Update Team ${teamId}</button>
+                `;
+                container.appendChild(card);
+            });
+        });
+
+        // 3. Send ONLY the specific team data back to server
+        function saveChanges(teamId) {
+            const updatePacket = {
+                teamId: teamId,
+                wood: document.getElementById(`wood-${teamId}`).value,
+                clay: document.getElementById(`clay-${teamId}`).value,
+                stone: document.getElementById(`stone-${teamId}`).value,
+                points: document.getElementById(`points-${teamId}`).value
+            };
+
+            // This triggers the "Surgery" listener in app.js
+            socket.emit('applyManualAdjustment', updatePacket);
+            showStatus(`✅ Team ${teamId} Updated!`, '#4CAF50');
+        }
+
+        function showStatus(msg, color) {
+            const el = document.getElementById('status-msg');
+            el.innerText = msg;
+            el.style.display = 'block';
+            el.style.backgroundColor = color;
+            setTimeout(() => { el.style.display = 'none'; }, 3000);
+        }
+
+        socket.on('notify', (msg) => {
+            showStatus(msg, msg.includes('❌') ? '#f44336' : '#4CAF50');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kingdom Control | Early Settlers</title>
+    <style>
+        :root {
+            --bg-deep: #0a0a1a;
+            --panel-navy: #16213e;
+            --gold: #f1c40f;
+            --accent: #e94560;
+            --card-blue: #0f3460;
+            --text-white: #e2e2e2;
+            --wood-brown: #a0522d;
+            --clay-orange: #d2691e;
+            --stone-grey: #808080;
+        }
+
+        body {
+            background: radial-gradient(circle, var(--panel-navy) 0%, var(--bg-deep) 100%);
+            color: var(--text-white);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            grid-template-rows: 60px 1fr;
+            gap: 15px;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        header.control-header {
+            grid-column: 1 / -1;
+            background: var(--panel-navy);
+            border: 2px solid var(--gold);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .header-title {
+            color: var(--gold);
+            font-family: 'Georgia', serif;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .col-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .panel {
+            background: rgba(22, 33, 62, 0.8);
+            border: 1px solid rgba(241, 196, 15, 0.3);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .col-label {
+            background: rgba(241, 196, 15, 0.1);
+            padding: 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(241, 196, 15, 0.2);
+        }
+
+        .scroll-area {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        /* --- PHASE BUTTONS --- */
+        .gm-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: var(--card-blue);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .gm-btn.active-phase {
+            background: var(--gold);
+            color: #000;
+        }
+
+        /* --- TABS --- */
+        .tab-bar {
+            display: flex;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(241, 196, 15, 0.2);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #8892b0;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+            background: rgba(241, 196, 15, 0.1);
+        }
+
+        /* --- PLAYER GRID & CHIPS (FIXED SIZE) --- */
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 12px;
+        }
+
+        .player-chip {
+            background: var(--card-blue);
+            padding: 15px 10px;
+            /* BEEFY PADDING */
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.85rem;
+            border: 1px solid rgba(241, 196, 15, 0.2);
+            border-left: 5px solid var(--gold);
+            color: var(--text-white);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 50px;
+            box-sizing: border-box;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .player-chip.active-player {
+            background: var(--gold);
+            color: #000;
+            border: 1px solid #fff;
+            box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+        }
+
+        /* TEAM BORDERS ONLY */
+        .player-chip.team-red {
+            border-left-color: var(--accent);
+        }
+
+        .player-chip.team-blue {
+            border-left-color: #4cc9f0;
+        }
+
+        .player-chip.team-green {
+            border-left-color: #4ad66d;
+        }
+
+        .player-chip.team-none {
+            border-left-color: #8892b0;
+        }
+
+        /* --- RESOURCE GRID --- */
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .res-btn {
+            background: var(--card-blue);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 15px 5px;
+            font-weight: bold;
+        }
+
+        /* Add this to your CSS */
+        .res-btn.claimed {
+            background: #1a1a2e !important;
+            border-color: #333 !important;
+            color: #444 !important;
+            opacity: 0.3;
+            pointer-events: none;
+            /* Disables clicking */
+            filter: grayscale(1);
+        }
+
+        /* Add this to your <style> section */
+        .player-chip.has-acted {
+            opacity: 0.4;
+            filter: grayscale(0.8);
+            border-left-color: #333 !important;
+            /* Neutralize team color */
+            cursor: not-allowed;
+            pointer-events: none;
+            /* Optional: prevents re-selecting them */
+        }
+
+        .res-wood {
+            border-color: var(--wood-brown);
+        }
+
+        .res-clay {
+            border-color: var(--clay-orange);
+        }
+
+        .res-stone {
+            border-color: var(--stone-grey);
+        }
+
+        .building-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        .build-btn {
+            background: var(--card-blue);
+            border: 1px solid var(--gold);
+            border-radius: 6px;
+            padding: 15px 5px;
+            color: var(--gold);
+            font-size: 0.75rem;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .round-display {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border-top: 2px solid var(--gold);
+            text-align: center;
+            color: var(--gold);
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="control-header">
+        <div class="header-title">EARLY SETTLERS // ACTION PANEL</div>
+        <div style="color: var(--gold); font-weight: bold; font-size: 0.7rem; letter-spacing: 2px;">COACH ANDREW
+        </div>
+    </header>
+
+    <div class="col-wrapper">
+        <aside class="panel">
+            <div class="col-label">Phases</div>
+            <div class="scroll-area" style="display: flex; flex-direction: column;">
+                <button id="btn-harvest" class="gm-btn" onclick="setPhase('harvest', this)">harvest phase</button>
+                <button id="btn-building" class="gm-btn" onclick="setPhase('building', this)">building phase</button>
+                <button onclick="sendCloseDrawer()" class="gm-btn">show leaderboard</button>
+                <button onclick="sendOpenDrawer()" class="gm-btn">show architect</button>
+                <button id="btn-lock-dashboard"  class="gm-btn" style="border-color: var(--accent); color: var(--accent)" onclick="toggleDashboardLock()">lock
+                    dashboard</button>
+                <button class="gm-btn" onclick="triggerNextRound()">next round</button>
+                <div id="round" class="round-display">round:1</div>
+            </div>
+        </aside>
+
+        <footer class="panel" style="height: 150px;">
+            <div class="col-label">Log</div>
+            <div class="scroll-area" id="log-container"
+                style="font-family: monospace; font-size: 0.7rem; color: #8892b0;">
+                <div>[Log] Action Panel Ready.</div>
+            </div>
+        </footer>
+    </div>
+
+    <div class="col-wrapper">
+        <section class="panel" style="height: 220px;">
+            <div class="col-label">Players</div>
+            <div id="harvest-tabs" class="tab-bar">
+                <button class="tab-btn active" onclick="showGroup(1, this)">Group 1</button>
+                <button class="tab-btn" onclick="showGroup(2, this)">Group 2</button>
+                <button class="tab-btn" onclick="showGroup(3, this)">Group 3</button>
+                <button class="tab-btn" onclick="showGroup(4, this)">Group 4</button>
+                <button class="tab-btn" onclick="showGroup(5, this)">Group 5</button>
+                <button class="tab-btn" onclick="showGroup(6, this)">Group 6</button>
+            </div>
+            <div class="scroll-area">
+                <div id="player-grid-container" class="player-grid"></div>
+            </div>
+        </section>
+
+        <main class="panel">
+            <div class="col-label" id="resource-label">Resources</div>
+            <div class="scroll-area">
+                <div id="harvest-grid" class="resource-grid">
+                    <div class="res-btn res-wood">🪵 wood</div>
+                    <div class="res-btn res-wood">🪵 wood</div>
+                    <div class="res-btn res-clay">🧱 clay</div>
+                    <div class="res-btn res-clay">🧱 clay</div>
+                    <div class="res-btn res-stone">🪨 stone</div>
+                    <div class="res-btn res-stone">🪨 stone</div>
+                    <div class="res-btn res-random">🎲 random</div>
+                    <div class="res-btn res-random">🎲 random</div>
+                </div>
+
+                <div id="building-grid" class="building-grid hidden">
+                    <div class="build-btn">Lumber Mill</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/structures.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/controller.js"></script>
+    <script src="js/controllerb.js"></script>
+</body>
+
+</html>
