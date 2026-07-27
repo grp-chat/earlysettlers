@@ -5,3 +5,22 @@ channel = "stable-25_05"
 
 [agent]
 expertMode = true
+
+[workflows]
+
+[[workflows.workflow]]
+name = "run app"
+mode = "sequential"
+author = 16242861
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node app.js"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
