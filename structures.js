@@ -41,7 +41,7 @@ const structures = {
     name: "Holiday House",
     image: "https://i.postimg.cc/YSK9rmmY/image_0_23.png",
     woodCost: [2], clayCost: [2],
-    points: [4],
+    points: [5],
     maxBuild: 3,
     requires: ["farm_house", "cooking_hearth", "stone_house"],
     conversion: { consumes: "stone_house", amount: 1 },
